@@ -11,7 +11,7 @@ class MyTableModel(TableModel):
             reader = csv.reader(the_file, delimiter=';')
             self.data_rows = [row for row in reader]
             column_count = len(self.data_rows[0])
-            super().__init__(columns=column_count)
+            super(MyTableModel, self).__init__(columns=column_count)
             self.columntypes = {str(col): 'text' for col in range(column_count)}
 
     @staticmethod
