@@ -7,12 +7,23 @@ class MyTableModel(TableModel):
 
     def __init__(self, filename):
         with open(filename) as the_file:
-            self.skip_metadata(the_file)
-            reader = csv.reader(the_file, delimiter=';')
-            self.data_rows = [row for row in reader]
+            self.data_rows = self.read_data(the_file)
             column_count = len(self.data_rows[0])
             super(MyTableModel, self).__init__(columns=column_count)
             self.columntypes = {str(col): 'text' for col in range(column_count)}
+
+    def read_data(self, the_file):
+        self.skip_metadata(the_file)
+        reader = csv.reader(the_file, delimiter=';')
+        result = [row for row in reader]
+        self.make_equal_length(result)
+        return result
+
+    @staticmethod
+    def make_equal_length(rows):
+        max_length = max([len(row) for row in rows])
+        for row in rows:
+            row += [''] * (max_length - len(row))
 
     @staticmethod
     def skip_metadata(the_file):
