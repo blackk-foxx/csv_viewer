@@ -111,6 +111,63 @@ class MyTableCanvas(TableCanvas):
                 if bgcolor is not None:
                     self.drawRect(row,col, color=bgcolor)
 
+    def drawCellEntry(self, row, col, text=None):
+        pass
+
+    def handle_arrow_keys(self, event):
+        super(MyTableCanvas, self).handle_arrow_keys(event)
+        cell_rect = Rectangle(self.getCellCoords(self.currentrow, self.currentcol))
+        moved_x = self.pan_to_reveal(cell_rect)
+        moved_y = self.scroll_to_reveal(cell_rect)
+        if moved_x or moved_y:
+            self.redrawVisible()
+
+    def scroll_to_reveal(self, target_rect):
+        viewport_rect = self.get_visible_rectangle()
+        move_to_y = None
+        if target_rect.top < viewport_rect.top:
+            move_to_y = target_rect.top
+        elif target_rect.bottom > viewport_rect.bottom:
+            move_to_y = target_rect.bottom - (viewport_rect.height - target_rect.height)
+        if move_to_y:
+            move_to_y /= self.rowheight * self.rows
+            self.yview('moveto', move_to_y)
+            self.tablerowheader.yview('moveto', move_to_y)
+        return move_to_y
+
+    def pan_to_reveal(self, target_rect):
+        viewport_rect = self.get_visible_rectangle()
+        move_to_x = None
+        if target_rect.left < viewport_rect.left:
+            move_to_x = target_rect.left
+        elif target_rect.right > viewport_rect.right:
+            move_to_x = target_rect.right - (viewport_rect.width - target_rect.width)
+        if move_to_x:
+            move_to_x /= self.tablewidth
+            self.xview('moveto', move_to_x)
+            self.tablecolheader.xview('moveto', move_to_x)
+        return move_to_x
+
+    def get_visible_rectangle(self):
+        return Rectangle(self.getVisibleRegion())
+
+
+class Rectangle:
+
+    def __init__(self, bounds):
+        self.left = bounds[0]
+        self.top = bounds[1]
+        self.right = bounds[2]
+        self.bottom = bounds[3]
+
+    @property
+    def width(self):
+        return self.right - self.left
+
+    @property
+    def height(self):
+        return self.bottom - self.top
+
 
 class Viewer(Frame):
 
