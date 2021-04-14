@@ -17,7 +17,21 @@ class MyTableModel(TableModel):
         reader = csv.reader(the_file, delimiter=';')
         result = [row for row in reader]
         self.make_equal_length(result)
+        self.fill_in_column_headers(result)
         return result
+
+    @staticmethod
+    def fill_in_column_headers(rows):
+        number_of_header_rows = 3
+        for row_index, row in enumerate(rows):
+            if row_index == number_of_header_rows:
+                break
+            header_to_replicate = ""
+            for col_index, column_header in enumerate(row):
+                if column_header and column_header != header_to_replicate:
+                    header_to_replicate = column_header
+                if not column_header:
+                    row[col_index] = header_to_replicate
 
     @staticmethod
     def make_equal_length(rows):
@@ -38,7 +52,7 @@ class MyTableModel(TableModel):
         return [row[colIndex] for row in self.data_rows]
 
     def getRowCount(self):
-         return len(self.data_rows)
+        return len(self.data_rows)
 
     def getRecordAtRow(self, rowIndex):
         return self.data_rows[rowIndex]
