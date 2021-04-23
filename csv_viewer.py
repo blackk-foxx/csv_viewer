@@ -23,9 +23,7 @@ class MyTableModel(TableModel):
     @staticmethod
     def fill_in_column_headers(rows):
         number_of_header_rows = 3
-        for row_index, row in enumerate(rows):
-            if row_index == number_of_header_rows:
-                break
+        for row in rows[:number_of_header_rows]:
             header_to_replicate = ""
             for col_index, column_header in enumerate(row):
                 if column_header and column_header != header_to_replicate:
