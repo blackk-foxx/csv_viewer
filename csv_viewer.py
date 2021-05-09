@@ -72,14 +72,14 @@ class MyTableCanvas(TableCanvas):
         self.configure(bg=self.cellbackgr)
         self.setColPositions()
 
-        #are we drawing a filtered subset of the recs?
-        if self.filtered == True and self.model.filteredrecs != None:
+        # are we drawing a filtered subset of the recs?
+        if self.filtered is True and self.model.filteredrecs is not None:
             self.rows = len(self.model.filteredrecs)
             self.delete('colrect')
 
-        self.rowrange = range(0,self.rows)
-        self.configure(scrollregion=(0,0, self.tablewidth+self.x_start,
-                self.rowheight*self.rows+10))
+        self.rowrange = range(0, self.rows)
+        self.configure(scrollregion=(0, 0, self.tablewidth + self.x_start,
+                                     self.rowheight * self.rows + 10))
 
         x1, y1, x2, y2 = self.getVisibleRegion()
         startvisiblerow, endvisiblerow = self.getVisibleRows(y1, y2)
@@ -91,24 +91,24 @@ class MyTableCanvas(TableCanvas):
             self.delete('entry')
             self.delete('rowrect')
             self.delete('currentrect')
-            self.delete('gridline','text')
+            self.delete('gridline', 'text')
             self.tablerowheader.redraw()
             return
 
-        #self.drawGrid(startvisiblerow, endvisiblerow)
+        # self.drawGrid(startvisiblerow, endvisiblerow)
         align = self.align
         self.delete('fillrect')
         self.drawData(model, align)
 
-        #self.drawSelectedCol()
+        # self.drawSelectedCol()
         self.tablecolheader.redraw()
         self.tablerowheader.redraw(align=self.align, showkeys=self.showkeynamesinheader)
-        #self.setSelectedRow(self.currentrow)
+        # self.setSelectedRow(self.currentrow)
         self.drawSelectedRow()
         self.drawSelectedRect(self.currentrow, self.currentcol)
-        #print self.multiplerowlist
+        # print self.multiplerowlist
 
-        if len(self.multiplerowlist)>1:
+        if len(self.multiplerowlist) > 1:
             self.tablerowheader.drawSelectedRows(self.multiplerowlist)
             self.drawMultipleRows(self.multiplerowlist)
             self.drawMultipleCells()
@@ -118,13 +118,37 @@ class MyTableCanvas(TableCanvas):
         fgcolor = model.getColorAt(0, 0, 'fg')
         for row in self.visiblerows:
             for col in self.visiblecols:
-                text = model.getValueAt(row,col)
+                text = model.getValueAt(row, col)
                 self.drawText(row, col, text, fgcolor, align)
                 if bgcolor is not None:
-                    self.drawRect(row,col, color=bgcolor)
+                    self.drawRect(row, col, color=bgcolor)
 
     def drawCellEntry(self, row, col, text=None):
         pass
+
+    def adjustColumnWidths(self):
+        """Optimally adjust col widths to accomodate the longest entry
+            in each column - usually only called  on first redraw"""
+
+        try:
+            fontsize = self.thefont[1]
+        except:
+            fontsize = self.fontsize
+        scale = 8.5 * float(fontsize)/12
+        for col in range(self.cols):
+            colname = self.model.getColumnName(col)
+            if colname in self.model.columnwidths:
+                w = self.model.columnwidths[colname]
+            else:
+                w = self.cellwidth
+            # Increase maxlen by a factor of 1.5 (obtained by trial and error)
+            # to account for the wider, uppercase names in some column headers
+            maxlen = self.model.getlongestEntry(col) * 1.5
+            size = maxlen * scale
+            if size < w:
+                continue
+            self.model.columnwidths[colname] = size + float(fontsize)/12*6
+        return
 
     def handle_arrow_keys(self, event):
         super(MyTableCanvas, self).handle_arrow_keys(event)
